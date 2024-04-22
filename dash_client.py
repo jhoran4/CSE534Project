@@ -373,7 +373,6 @@ def start_playback_smart(dp_object, domain, playback_type=None, download=False, 
                         segment_size_list = []
                         for i in range(config_dash.LOOKAHEAD):
                             next_seg_num = (segment_number + 1) + i
-                            print("SEGMENT NUM: {0} DP_LIST LENGTH: {1}".format(next_seg_num, len(dp_list)))
                             if next_seg_num >= len(dp_list) - 1:
                                 config_dash.LOG.debug("Lookahead has surpassed the number of available segments, restricting down to the next {} segments".format(i))
                                 break
@@ -385,6 +384,7 @@ def start_playback_smart(dp_object, domain, playback_type=None, download=False, 
                                                                                 previous_download_rate,
                                                                                 segment_size_list,
                                                                                 randomized_state,
+                                                                                segment_download_time,
                                                                                 ra_gamma, ra_alpha)
                     # except IndexError as e:
                     #     config_dash.LOG.error(e)

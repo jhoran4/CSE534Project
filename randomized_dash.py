@@ -6,16 +6,18 @@ import random
 GAMMA = "GAMMA"
 ALPHA = "ALPHA"
 
-def get_expected_download_time(bitrate, download_rate, next_segments):
+def get_expected_download_time(bitrate, download_rate, next_segments, prev_download_time):
     cur_download_time = 0
     
     for segment in next_segments:
         cur_download_time += float(segment[bitrate])/download_rate
     
     # Return the average of the download times
+    if len(next_segments) == 0:
+        return prev_download_time
     return cur_download_time/len(next_segments)
 
-def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_dwn_rate, next_segments, state, gamma, alpha):
+def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_dwn_rate, next_segments, state, segment_download_time, gamma, alpha):
     '''
     The idea behind this algorithm is to utilize the same concepts as the previous three policies, but
     to have a random element in which there is a chance the "unsuitable" bitrate will be chosen. This
@@ -38,9 +40,9 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
     # Adjust from that bitrate. This is to avoid slow starts in the event of
     # the download rate/buffer occupancy being high OR to avoid quick starts
     # in the event the download rate/buffer occupancy is low (Average case)
-    print("VIDEO SEGMENTS: {0}".format(available_video_segments))
-    if available_video_segments <= 0.1*config_dash.RANDOMIZED_BUFFER_SIZE and state == "INITIAL":
-        next_bitrate = bitrates[0]
+    print("VIDEO SEGMENTS: {0} AVAILABLE DURATION: {1}".format(available_video_segments, available_video_duration))
+    if available_video_segments <= (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE and state == "INITIAL":
+        next_bitrate = random.choice(bitrates[0:(int((len(bitrates)-1)/4))])
         return next_bitrate, delay, "INITIAL", None, None, None
     elif state != "RUNNING":
         next_bitrate = bitrates[0]
@@ -55,16 +57,20 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
     download_rate = avg_down_rate * 8
     previous_download_rate = prev_dwn_rate * 8
     
+    print("Previous Download Rate: {0}".format(previous_download_rate))
+    print("Download Rate: {0}".format(download_rate))
+    
     # If the previous download rate is greater than or equal to the average, lean toward a higher bitrate with a small chance to choose lower
     # else do the opposite
     use_gamma = gamma
     use_alpha = alpha
     if download_rate > previous_download_rate:
-        gamma = alpha
-        alpha = gamma
+        use_gamma = alpha
+        use_alpha = gamma
         
     # Obtain the expected download time for the next few segments
-    expected_download_time = get_expected_download_time(current_bitrate, avg_down_rate, next_segments)
+    expected_download_time = get_expected_download_time(current_bitrate, avg_down_rate, next_segments, segment_download_time)
+    print("Expected Download Time: {0}".format(expected_download_time))
     
     # Obtain two distinct bitrates, a higher bitrate and a lower bitrate
     higher_bitrate = None
@@ -73,14 +79,16 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
     # Unlike the netflix policy, only about 30 percent of the buffer is required to be full
     # just to make sure the DASH client can always perform work
     
-    if available_video_segments <= 0.1*config_dash.RANDOMIZED_BUFFER_SIZE:
+    if available_video_segments <= (1-use_gamma)*config_dash.RANDOMIZED_BUFFER_SIZE:
         # Select a lower bitrate
         if current_bitrate == bitrates[0]:
             lower_bitrate = current_bitrate
             higher_bitrate = bitrates[1]
         else:
             for i in range(bitrates.index(current_bitrate), -1, -1):
-                new_download_time = get_expected_download_time(bitrates[i], avg_down_rate, next_segments)
+                # Use the previous download rate in this case because network may be decreasing in performance
+                # So an average could lead to an inaccurate assessment of the network
+                new_download_time = get_expected_download_time(bitrates[i], prev_dwn_rate, next_segments, segment_download_time)
                 if new_download_time <= available_video_duration:
                     if i < (len(bitrates) - 1):
                         lower_bitrate = bitrates[i]
@@ -101,7 +109,7 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
         else:
             reversed_bitrates = list(reversed(bitrates))
             for i in range(len(reversed_bitrates)):
-                new_download_time = get_expected_download_time(reversed_bitrates[i], avg_down_rate, next_segments)
+                new_download_time = get_expected_download_time(reversed_bitrates[i], avg_down_rate, next_segments, segment_download_time)
                 if new_download_time <= available_video_duration:
                     if i > (len(reversed_bitrates) - 1):
                         lower_bitrate = reversed_bitrates[i]
@@ -120,7 +128,7 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
             higher_bitrate = current_bitrate
         else:
             for i in range(bitrates.index(current_bitrate)+1, len(bitrates)):
-                new_download_time = get_expected_download_time(bitrates[i], avg_down_rate, next_segments)
+                new_download_time = get_expected_download_time(bitrates[i], avg_down_rate, next_segments, segment_download_time)
                 if new_download_time > available_video_duration:
                     break
                 else:
@@ -137,19 +145,21 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
                 else:
                     lower_bitrate = bitrates[bitrates.index(current_bitrate) - 1]
                     higher_bitrate = current_bitrate
-        delay = dash_player.buffer.qsize() - 0.3*config_dash.RANDOMIZED_BUFFER_SIZE
+        delay = dash_player.buffer.qsize() - (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE
     
-    if random.random() <= gamma:
+    print("Buffer Queue SIze: {0} Buffer Percentage Size: {1}".format(dash_player.buffer.qsize(), (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE))
+    
+    if random.random() <= use_gamma:
         # Select the higher bitrate
         flag = False
-        if gamma >= 0.5:
+        if use_gamma >= 0.5:
             flag = True
         next_bitrate = higher_bitrate
-        return next_bitrate, 0, state, GAMMA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments)
+        return next_bitrate, 0, state, GAMMA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments, segment_download_time)
     else:
         # Select the lower bitrate
         flag = False
-        if alpha >= 0.5:
+        if use_alpha >= 0.5:
             flag = True
         next_bitrate = lower_bitrate
-        return next_bitrate, 0, state, ALPHA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments)
+        return next_bitrate, 0, state, ALPHA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments, segment_download_time)
