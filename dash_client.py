@@ -378,7 +378,7 @@ def start_playback_smart(dp_object, domain, playback_type=None, download=False, 
                                 break
                             segment_size_list.append(get_segment_sizes(dp_object, next_seg_num))
                         
-                        current_bitrate, delay, randomized_state, decision, majority, expected_download = randomized_dash.randomized_dash(bitrates, dash_player,
+                        current_bitrate, delay, randomized_state, decision, majority, expected_download, ra_gamma, ra_alpha = randomized_dash.randomized_dash(bitrates, dash_player,
                                                                                 weighted_mean_object.weighted_mean_rate,
                                                                                 current_bitrate,
                                                                                 previous_download_rate,
@@ -424,39 +424,39 @@ def start_playback_smart(dp_object, domain, playback_type=None, download=False, 
             return None
         segment_download_time = timeit.default_timer() - start_time
         # RA probability adjustment
-        if decision == "GAMMA":
-            # Selects the higher bitrate
-            if majority:
-                if segment_download_time <= expected_download:
-                    # Increase probability of gamma
-                    if (ra_gamma + 0.01) < 1: ra_gamma += 0.01; ra_alpha -= 0.01
-                else:
-                    # Decrease probability of gamma
-                    if (ra_gamma - 0.01) > 0: ra_gamma -= 0.01; ra_alpha += 0.01
-            else:
-                if segment_download_time <= expected_download:
-                    # Decrease probability of gamma
-                    if (ra_gamma - 0.01) < 1: ra_gamma -= 0.01; ra_alpha += 0.01
-                else:
-                    # Increase probability of gamma
-                    if (ra_gamma + 0.01) > 0: ra_gamma += 0.01; ra_alpha -= 0.01
+        # if decision == "GAMMA":
+        #     # Selects the higher bitrate
+        #     if majority:
+        #         if segment_download_time <= expected_download:
+        #             # Increase probability of gamma
+        #             if (ra_gamma + 0.01) < 1: ra_gamma += 0.01; ra_alpha -= 0.01
+        #         else:
+        #             # Decrease probability of gamma
+        #             if (ra_gamma - 0.01) > 0: ra_gamma -= 0.01; ra_alpha += 0.01
+        #     else:
+        #         if segment_download_time <= expected_download:
+        #             # Decrease probability of gamma
+        #             if (ra_gamma - 0.01) < 1: ra_gamma -= 0.01; ra_alpha += 0.01
+        #         else:
+        #             # Increase probability of gamma
+        #             if (ra_gamma + 0.01) > 0: ra_gamma += 0.01; ra_alpha -= 0.01
         
-        if decision == "ALPHA":
-            # Selects the lower bitrate
-            if majority:
-                if segment_download_time <= expected_download:
-                    # Decrease probability of alpha
-                    if (ra_gamma + 0.01) < 1: ra_gamma -= 0.01; ra_alpha += 0.01
-                else:
-                    # Increase probability of alpha
-                    if (ra_gamma - 0.01) > 0: ra_gamma += 0.01; ra_alpha -= 0.01
-            else:
-                if segment_download_time <= expected_download:
-                    # Increase probability of gamma
-                    if (ra_gamma - 0.01) < 1: ra_gamma += 0.01; ra_alpha -= 0.01
-                else:
-                    # Decrease probability of gamma
-                    if (ra_gamma + 0.01) > 0: ra_gamma -= 0.01; ra_alpha += 0.01
+        # if decision == "ALPHA":
+        #     # Selects the lower bitrate
+        #     if majority:
+        #         if segment_download_time <= expected_download:
+        #             # Decrease probability of alpha
+        #             if (ra_gamma + 0.01) < 1: ra_gamma -= 0.01; ra_alpha += 0.01
+        #         else:
+        #             # Increase probability of alpha
+        #             if (ra_gamma - 0.01) > 0: ra_gamma += 0.01; ra_alpha -= 0.01
+        #     else:
+        #         if segment_download_time <= expected_download:
+        #             # Increase probability of gamma
+        #             if (ra_gamma - 0.01) < 1: ra_gamma += 0.01; ra_alpha -= 0.01
+        #         else:
+        #             # Decrease probability of gamma
+        #             if (ra_gamma + 0.01) > 0: ra_gamma -= 0.01; ra_alpha += 0.01
         # End RA probability adjustment
         previous_segment_times.append(segment_download_time)
         recent_download_sizes.append(segment_size)

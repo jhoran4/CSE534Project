@@ -2,6 +2,7 @@ __author__ = 'horan'
 
 import config_dash
 import random
+import math
 
 GAMMA = "GAMMA"
 ALPHA = "ALPHA"
@@ -43,13 +44,13 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
     print("VIDEO SEGMENTS: {0} AVAILABLE DURATION: {1}".format(available_video_segments, available_video_duration))
     if available_video_segments <= (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE and state == "INITIAL":
         next_bitrate = random.choice(bitrates[0:(int((len(bitrates)-1)/4))])
-        return next_bitrate, delay, "INITIAL", None, None, None
+        return next_bitrate, delay, "INITIAL", None, None, None, gamma, alpha
     elif state != "RUNNING":
         next_bitrate = bitrates[0]
         next_bitrate = random.choice(bitrates)
         next_bitrate_index = bitrates.index(next_bitrate)
         delay = dash_player.buffer.qsize()/4
-        return next_bitrate, delay, "RUNNING", None, None, None
+        return next_bitrate, 0, "RUNNING", None, None, None, gamma, alpha
     else:
         state = "RUNNING"
     
@@ -59,6 +60,12 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
     
     print("Previous Download Rate: {0}".format(previous_download_rate))
     print("Download Rate: {0}".format(download_rate))
+    print("Current Bitrate: {0}".format(current_bitrate))
+    
+    param = (previous_download_rate - download_rate)/current_bitrate
+    ret_gamma = 1/(1 + (math.exp(-1*param)))
+    
+    print("Gamma: {0}".format(ret_gamma))
     
     # If the previous download rate is greater than or equal to the average, lean toward a higher bitrate with a small chance to choose lower
     # else do the opposite
@@ -111,12 +118,12 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
             for i in range(len(reversed_bitrates)):
                 new_download_time = get_expected_download_time(reversed_bitrates[i], avg_down_rate, next_segments, segment_download_time)
                 if new_download_time <= available_video_duration:
-                    if i > (len(reversed_bitrates) - 1):
+                    if i > (len(reversed_bitrates) - 2):
                         lower_bitrate = reversed_bitrates[i]
                         higher_bitrate = reversed_bitrates[i-1]
                     else:
-                        lower_bitrate = reversed_bitrates[i]
-                        higher_bitrate = reversed_bitrates[i+1]
+                        lower_bitrate = reversed_bitrates[i+1]
+                        higher_bitrate = reversed_bitrates[i]
                     break
             if higher_bitrate is None or lower_bitrate is None:
                 lower_bitrate = reversed_bitrates[len(reversed_bitrates) - 1]
@@ -147,7 +154,7 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
                     higher_bitrate = current_bitrate
         delay = dash_player.buffer.qsize() - (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE
     
-    print("Buffer Queue SIze: {0} Buffer Percentage Size: {1}".format(dash_player.buffer.qsize(), (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE))
+    print("Buffer Queue Size: {0} Buffer Percentage Size: {1}".format(dash_player.buffer.qsize(), (1-gamma)*config_dash.RANDOMIZED_BUFFER_SIZE))
     
     if random.random() <= use_gamma:
         # Select the higher bitrate
@@ -155,11 +162,11 @@ def randomized_dash(bitrates, dash_player, avg_down_rate, current_bitrate, prev_
         if use_gamma >= 0.5:
             flag = True
         next_bitrate = higher_bitrate
-        return next_bitrate, 0, state, GAMMA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments, segment_download_time)
+        return next_bitrate, 0, state, GAMMA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments, segment_download_time), ret_gamma, 1-ret_gamma
     else:
         # Select the lower bitrate
         flag = False
         if use_alpha >= 0.5:
             flag = True
         next_bitrate = lower_bitrate
-        return next_bitrate, 0, state, ALPHA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments, segment_download_time)
+        return next_bitrate, 0, state, ALPHA, flag, get_expected_download_time(next_bitrate, avg_down_rate, next_segments, segment_download_time), ret_gamma, 1-ret_gamma
