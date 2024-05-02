@@ -5,57 +5,9 @@ Average Bitrate: 811.14111875
 =========================
 
 =========================
-Evaluation for results/rb/interruptions/
-Interruptions: 6
-Average Bitrate: 453.16992079207915
-=========================
-
-=========================
-Evaluation for results/rb/trace/bus_m15/
-Interruptions: 0
-Average Bitrate: 526.227887755102
-=========================
-
-=========================
-Evaluation for results/rb/trace/bus_b62_2/
-Interruptions: 0
-Average Bitrate: 198.5582828282828
-=========================
-
-=========================
-Evaluation for results/rb/trace/NYU_Campus_Bus/
-Interruptions: 0
-Average Bitrate: 1410.4568514851485
-=========================
-
-=========================
 Evaluation for results/bb/cbr/
 Interruptions: 0
 Average Bitrate: 601.9113770491804
-=========================
-
-=========================
-Evaluation for results/bb/interruptions/
-Interruptions: 0
-Average Bitrate: 296.2648717948718
-=========================
-
-=========================
-Evaluation for results/bb/trace/bus_m15/
-Interruptions: 0
-Average Bitrate: 340.4930406504065
-=========================
-
-=========================
-Evaluation for results/bb/trace/bus_b62_2/
-Interruptions: 0
-Average Bitrate: 165.85095327102803
-=========================
-
-=========================
-Evaluation for results/bb/trace/NYU_Campus_Bus/
-Interruptions: 0
-Average Bitrate: 840.0724609375
 =========================
 
 =========================
@@ -65,33 +17,27 @@ Average Bitrate: 813.4214812499999
 =========================
 
 =========================
-Evaluation for results/sara/interruptions/
-Interruptions: 1
-Average Bitrate: 462.67729787234043
-=========================
-
-=========================
-Evaluation for results/sara/trace/bus_m15/
-Interruptions: 0
-Average Bitrate: 569.139918367347
-=========================
-
-=========================
-Evaluation for results/sara/trace/bus_b62_2/
-Interruptions: 0
-Average Bitrate: 191.16533333333334
-=========================
-
-=========================
-Evaluation for results/sara/trace/NYU_Campus_Bus/
-Interruptions: 0
-Average Bitrate: 1802.0711188118812
-=========================
-
-=========================
 Evaluation for results/ra/cbr/
 Interruptions: 0
 Average Bitrate: 820.724825
+=========================
+
+=========================
+Evaluation for results/rb/interruptions/
+Interruptions: 6
+Average Bitrate: 453.16992079207915
+=========================
+
+=========================
+Evaluation for results/bb/interruptions/
+Interruptions: 0
+Average Bitrate: 296.2648717948718
+=========================
+
+=========================
+Evaluation for results/sara/interruptions/
+Interruptions: 1
+Average Bitrate: 462.67729787234043
 =========================
 
 =========================
@@ -101,15 +47,69 @@ Average Bitrate: 443.4863571428572
 =========================
 
 =========================
+Evaluation for results/rb/trace/bus_m15/
+Interruptions: 0
+Average Bitrate: 526.227887755102
+=========================
+
+=========================
+Evaluation for results/bb/trace/bus_m15/
+Interruptions: 0
+Average Bitrate: 340.4930406504065
+=========================
+
+=========================
+Evaluation for results/sara/trace/bus_m15/
+Interruptions: 0
+Average Bitrate: 569.139918367347
+=========================
+
+=========================
 Evaluation for results/ra/trace/bus_m15/
 Interruptions: 0
 Average Bitrate: 545.6545
 =========================
 
 =========================
+Evaluation for results/rb/trace/bus_b62_2/
+Interruptions: 0
+Average Bitrate: 198.5582828282828
+=========================
+
+=========================
+Evaluation for results/bb/trace/bus_b62_2/
+Interruptions: 0
+Average Bitrate: 165.85095327102803
+=========================
+
+=========================
+Evaluation for results/sara/trace/bus_b62_2/
+Interruptions: 0
+Average Bitrate: 191.16533333333334
+=========================
+
+=========================
 Evaluation for results/ra/trace/bus_b62_2/
 Interruptions: 0
 Average Bitrate: 184.27547
+=========================
+
+=========================
+Evaluation for results/rb/trace/NYU_Campus_Bus/
+Interruptions: 0
+Average Bitrate: 1410.4568514851485
+=========================
+
+=========================
+Evaluation for results/bb/trace/NYU_Campus_Bus/
+Interruptions: 0
+Average Bitrate: 840.0724609375
+=========================
+
+=========================
+Evaluation for results/sara/trace/NYU_Campus_Bus/
+Interruptions: 0
+Average Bitrate: 1802.0711188118812
 =========================
 
 =========================
