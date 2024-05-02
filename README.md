@@ -6,7 +6,7 @@ Files that are NOT mine that I have made modifications to (see [https://github.c
 - config_dash.py
 - dash_client.py
 
-For these files mentiuoned above, credit goes to Parikshit Juluri and the other contributors in the above mentioned repository.
+For these files mentioned above, credit goes to Parikshit Juluri and the other contributors in the above mentioned repository.
 
 My adaptive video streaming policy:
 - randomized_dash.py
@@ -26,6 +26,8 @@ git clone https://github.com/teaching-on-testbeds/AStream
 sudo apt update
 sudo apt install -y python3 ffmpeg
 ```
+
+You must upload the config_dash.py, dash_client.py, and randomized_dash.py files to the client using the notebook in this repository in order to test the Randomized Adaptation policy.
 
 Additionally, use the notebook from this repository to upload the reset.sh and extract_results.sh scripts to the client node. The reset.sh script is for clearing all of the video files and logs from a previously run experiment to set up for a new experiment and the extract_results.sh script is used for extracting the BigBuckBunny.mp4 file after running an experiment.
 
